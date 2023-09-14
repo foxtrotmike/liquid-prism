@@ -18,13 +18,14 @@ df = pd.read_csv(csv_path, header=0)
 #%%
 import scipy.stats as stats
 F = set(df.keys()).difference(['dataset', 'patient_id', 'sample_id'])
+dfp = df.groupby('sample_id')
+clabel = dfp.dataset.first()
 P = []
 Afun = [np.mean,np.std] #aggregation or reduction function
 
 for f in F:    
     for fun in Afun:
-        dfp = df.groupby('patient_id')
-        clabel = dfp.dataset.first()
+
         U = list(set(clabel))
         
         x = dfp[f].apply(fun)
@@ -37,4 +38,7 @@ for f in F:
 P = np.array(P)     
 
 from statsmodels.stats.multitest import multipletests
-q = multipletests(np.array(P[:,-1],dtype = np.float))
+mtr = multipletests(np.array(P[:,-1],dtype = np.float))
+passed,q = mtr[0],mtr[1]
+print([ (P[i],q[i]) for i in range(len(passed)) if passed[i]])
+
